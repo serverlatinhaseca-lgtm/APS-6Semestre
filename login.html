@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Entrar — VerdeID</title><link rel="stylesheet" href="assets/css/style.css"></head>
+<body>
+<nav class="nav"><div class="nav-inner"><a class="brand" href="index.html"><span class="brand-mark">V</span> VerdeID</a><div class="nav-links"><a href="index.html">Início</a><a href="cadastro.html">Criar conta</a></div></div></nav>
+<main class="wrap"><section class="block">
+<form class="form" id="f-login">
+<h1 style="margin:0">Entrar</h1><p class="muted">Acesso à plataforma autenticada [DEMO].</p>
+<div class="alert alert-err" id="erro" hidden></div>
+<label for="email">E-mail</label><input id="email" type="email" required autocomplete="username" placeholder="cidadao@verdeid.demo">
+<label for="senha">Senha</label><input id="senha" type="password" required autocomplete="current-password" placeholder="demo123">
+<label style="font-weight:400"><input type="checkbox" id="lembrar" style="width:auto"> Manter conectado neste navegador</label>
+<button class="btn btn-primary" style="width:100%;margin-top:14px" type="submit">Entrar</button>
+<p class="hint">Ainda não tem conta? <a href="cadastro.html">Crie grátis</a>.</p>
+<div class="demo-box"><strong>Contas [DEMO] — senha <code>demo123</code>:</strong><br>
+<code>cidadao@verdeid.demo</code> (nível 1) · <code>pesquisador@verdeid.demo</code> (nível 2) · <code>gestor@verdeid.demo</code> (nível 3)</div>
+</form>
+</section></main>
+<script src="assets/js/data.js"></script><script src="assets/js/auth.js"></script>
+<script>
+document.getElementById("f-login").addEventListener("submit",e=>{
+  e.preventDefault();
+  const r=Auth.entrar(email.value,senha.value,lembrar.checked);
+  if(r.erro){ const x=document.getElementById("erro"); x.hidden=false; x.textContent=r.erro; return; }
+  const next=new URLSearchParams(location.search).get("next")||"painel.html";
+  location.href=next;
+});
+</script>
+</body>
+</html>

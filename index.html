@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VerdeID — Identificação e acesso a informações ambientais</title>
+<meta name="description" content="VerdeID: plataforma de identificação e controle de acesso a informações ambientais, por nível de autorização. Projeto acadêmico (APS).">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
+<nav class="nav" aria-label="Navegação principal"><div class="nav-inner">
+<a class="brand" href="index.html"><span class="brand-mark">V</span> VerdeID</a>
+<div class="nav-links"><a class="hide-m" href="#como-funciona">Como funciona</a><a class="hide-m" href="#niveis">Níveis</a><a class="hide-m" href="privacidade.html">Privacidade</a><span data-auth-area></span></div>
+</div></nav>
+
+<header class="hero"><div class="hero-grid">
+<div>
+<span class="eyebrow">Projeto acadêmico · APS 6º semestre · [DEMO]</span>
+<h1>Tecnologia que organiza o acesso à informação ambiental.</h1>
+<p class="lead">O VerdeID identifica o usuário e libera apenas o conteúdo adequado ao seu nível de autorização — do guia de coleta seletiva ao protocolo de gestão. Simples para o cidadão, rigoroso para a instituição.</p>
+<p><a class="btn btn-primary" href="cadastro.html">Criar conta grátis</a> <a class="btn btn-ghost" style="color:#fff;border-color:rgba(255,255,255,.4)" href="#como-funciona">Ver como funciona</a></p>
+<p class="hint" style="color:#BFD6C5">Sem cartão · Contas demo disponíveis no login · Reconhecimento facial é simulação didática</p>
+</div>
+<div class="hero-card" role="img" aria-label="Fluxo: identificar, autorizar, consultar">
+<h3>Do login ao conteúdo em 3 passos</h3>
+<div class="flow">
+<div class="flow-step"><span class="dot">1</span><div><strong>Identifique-se.</strong> E-mail + senha e verificação facial <em>simulada</em>.</div></div>
+<div class="flow-step"><span class="dot">2</span><div><strong>Receba seu nível.</strong> Cidadão, Pesquisador ou Gestor <span class="muted">[PROVISÓRIO]</span>.</div></div>
+<div class="flow-step"><span class="dot">3</span><div><strong>Consulte o acervo filtrado.</strong> Cada artigo exige um nível mínimo.</div></div>
+</div>
+<p style="margin-top:12px"><a class="btn btn-primary btn-small" href="painel.html">Abrir plataforma</a></p>
+</div>
+</div></header>
+
+<main id="conteudo">
+<section class="block wrap" id="problema">
+<div class="grid-2">
+<div class="card reveal"><span class="tag">O problema</span><h3>Informação ambiental sensível circula sem controle</h3><p class="muted">Guias públicos se misturam a relatórios técnicos e protocolos de fiscalização. Sem identificação e permissões, há risco de desinformação, uso indevido e exposição de dados sensíveis.</p></div>
+<div class="card reveal"><span class="tag">A proposta</span><h3>Acesso certo para o perfil certo</h3><p class="muted">O VerdeID separa a <strong>landing pública</strong> (informação aberta) da <strong>plataforma autenticada</strong> (acervo por nível). Identificação + autorização = gestão mais organizada, responsável e segura.</p></div>
+</div>
+</section>
+
+<section class="block wrap" id="como-funciona">
+<div class="card reveal">
+<span class="tag">Como funciona</span>
+<h2 style="margin:0 0 8px">Identificação → autorização → conteúdo</h2>
+<table class="table" aria-label="Etapas do sistema">
+<tr><th>Etapa</th><th>O que acontece</th><th>Por que importa</th></tr>
+<tr><td><strong>1. Identificação</strong></td><td>Login + verificação facial <em>simulada</em> no navegador.</td><td>Garante que cada sessão pertence a um usuário conhecido.</td></tr>
+<tr><td><strong>2. Autorização</strong></td><td>Conta recebe um nível: Cidadão (1), Pesquisador (2) ou Gestor (3). <span class="muted">[PROVISÓRIO]</span></td><td>Limita o acervo ao necessário para aquele perfil.</td></tr>
+<tr><td><strong>3. Consulta</strong></td><td>Painel lista só artigos com <code>nivel ≤ seu nível</code>.</td><td>Evita vazamento e foca a leitura.</td></tr>
+</table>
+<p class="hint">Demonstração: entre como <code>pesquisador@verdeid.demo / demo123</code> e compare com <code>cidadao@verdeid.demo / demo123</code>.</p>
+</div>
+</section>
+
+<section class="block wrap" id="niveis">
+<h2 style="margin:0 0 6px">Níveis de acesso <span class="muted" style="font-size:.9rem">[PROVISÓRIO — confirmar na proposta final]</span></h2>
+<p class="muted">Definição atual é ilustrativa para viabilizar a demo navegável.</p>
+<div class="grid-3">
+<div class="card levels reveal"><span class="tag">Nível 1</span><h3>Cidadão</h3><p class="muted">Guias, coleta seletiva, denúncias, economia de água.</p></div>
+<div class="card levels reveal"><span class="tag">Nível 2</span><h3>Pesquisador</h3><p class="muted">Metodologias, séries históricas, relatórios técnicos.</p></div>
+<div class="card levels reveal"><span class="tag">Nível 3</span><h3>Gestor</h3><p class="muted">Fiscalização, áreas sensíveis, resposta a incidentes.</p></div>
+</div>
+</section>
+
+<section class="block wrap" id="privacidade">
+<div class="grid-2">
+<div class="card reveal"><span class="tag">Privacidade e LGPD</span><h3>Simulação didática, sem biometria real</h3><p class="muted">O “reconhecimento facial” aqui é uma encenação no navegador: nada é gravado, enviado ou persistido. Dados de conta demo ficam só no seu <code>localStorage</code>. <a href="privacidade.html">Ler política</a>.</p></div>
+<div class="card reveal"><span class="tag">Proteção ambiental</span><h3>Informação organizada protege o território</h3><p class="muted">Separar o público do restrito evita uso indevido de protocolos e melhora a resposta de gestores e pesquisadores — sem tirar o essencial do cidadão.</p></div>
+</div>
+<div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap">
+<a class="btn btn-primary" href="login.html">Entrar na plataforma</a>
+<a class="btn btn-ghost" href="privacidade.html">Como tratamos dados</a>
+</div>
+</section>
+</main>
+
+<footer><div class="wrap">VerdeID · APS 6º semestre · Conteúdo de demonstração [DEMO] · <span data-ano></span> · <a href="privacidade.html">Privacidade</a></div></footer>
+<script src="assets/js/data.js"></script><script src="assets/js/auth.js"></script><script src="assets/js/app.js"></script>
+</body>
+</html>

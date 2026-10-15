@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel — VerdeID</title><link rel="stylesheet" href="assets/css/style.css"></head>
+<body>
+<nav class="nav"><div class="nav-inner"><a class="brand" href="index.html"><span class="brand-mark">V</span> VerdeID</a><div class="nav-links"><a href="index.html">Início</a><span data-auth-area></span></div></div></nav>
+<main class="wrap"><section class="block">
+<div class="toolbar"><div><h1 style="margin:0" id="titulo">Acervo</h1><p class="muted" id="sub" style="margin:4px 0"></p></div>
+<div class="search"><input id="busca" placeholder="Buscar artigos…" aria-label="Buscar artigos" style="max-width:260px"><select id="filtro" aria-label="Filtrar por nível"><option value="0">Todos os meus níveis</option><option value="1">Nível 1</option><option value="2">Nível 2</option><option value="3">Nível 3</option></select></div></div>
+
+<div class="card face" data-face style="margin-bottom:18px">
+<div style="padding:16px 18px 0"><strong>Verificação facial (simulação didática)</strong><p class="hint" data-face-msg style="color:#BFD6C5">Nada é gravado ou enviado. Opcional para a demo.</p></div>
+<div class="face-view"><video autoplay playsinline muted></video><div class="face-oval">Posicione o rosto aqui</div><div class="scanline"></div></div>
+<div style="padding:14px 18px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-ghost btn-small" data-face-cam type="button">Ativar câmera (opcional)</button><button class="btn btn-primary btn-small" data-face-sim type="button">Verificar rosto (simulação)</button></div>
+</div>
+
+<div class="grid-3" id="lista"></div>
+<div class="card" id="vazio" hidden><strong>Nenhum artigo para este filtro.</strong><p class="muted">Sua conta não alcança esse nível — isso é o controle de acesso funcionando.</p></div>
+</section></main>
+<footer><div class="wrap">VerdeID · acervo [DEMO] · <span data-ano></span></div></footer>
+<script src="assets/js/data.js"></script><script src="assets/js/auth.js"></script><script src="assets/js/app.js"></script>
+<script>
+const s=Auth.exigir();
+if(s){
+  titulo.textContent=`Acervo · ${Auth.nomeNivel(s.nivel)}`;
+  sub.textContent=`${s.nome} — você vê níveis 1 a ${s.nivel}. Níveis [PROVISÓRIO].`;
+  function render(){
+    const q=(busca.value||"").toLowerCase(), f=+filtro.value;
+    const itens=window.VERDEID_ARTIGOS.filter(a=>a.nivel<=s.nivel&&(!f||a.nivel===f)&&(!q||(a.titulo+a.resumo).toLowerCase().includes(q)));
+    lista.innerHTML=itens.map(a=>`<div class="card"><span class="tag">Nível ${a.nivel} · ${Auth.nomeNivel(a.nivel)}</span><h3>${a.titulo}</h3><p class="muted">${a.resumo}</p><a class="btn btn-primary btn-small" href="artigo.html?id=${a.id}">Ler artigo</a></div>`).join("");
+    vazio.hidden=itens.length>0;
+  }
+  busca.addEventListener("input",render); filtro.addEventListener("change",render); render();
+}
+</script>
+</body>
+</html>
