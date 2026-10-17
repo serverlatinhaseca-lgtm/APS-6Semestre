@@ -41,17 +41,32 @@ Abrir `http://localhost:8000/index.html`.
 Fluxo de validação manual do site: `index → login → painel → artigo`.
 
 ### 3.2 Backend (API + reconhecimento facial)
+
+**Arquivos de suporte:**
+- `.env.example` — modelo do arquivo de variáveis de ambiente. Copie para `.env` e preencha `POSTGRES_PASSWORD`.
+- `setup_backend.sh` — script automatizado que sobe o PostgreSQL, instala dependências e instrui como iniciar a API.
+
 ```bash
-# 1) Sobe PostgreSQL na porta 5432 (precisa do .env)
+# 1) Copie o modelo de ambiente e edite a senha
+cp .env.example .env
+# edite o .env com sua POSTGRES_PASSWORD
+
+# 2) Sobe PostgreSQL na porta 5432
 docker compose up
 
-# 2) Instala dependências Python
+# 3) Instala dependências Python
 pip install -r requirements.txt
 
-# 3) Inicia a API
+# 4) Inicia a API
 uvicorn src.api:app
 # ou: python src/main.py   (sobe API + loop da câmera OpenCV)
 ```
+Ou use o script automatizado:
+```bash
+chmod +x setup_backend.sh
+./setup_backend.sh
+```
+
 **Ordem obrigatória:** banco primeiro → dependências depois → uvicorn por último.
 `src/banco_dados.py` carrega `.env` na raiz (`load_dotenv`) e exige `POSTGRES_PASSWORD`.
 
