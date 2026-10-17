@@ -1,12 +1,11 @@
-# AGENTS.md — APS-6Semestre / VerdeID + Reconhecimento Facial
+# AGENTS.md — APS-6Semestre / VerdeID
 
-- Projeto: VerdeID (landing pública + plataforma autenticada por nível de acesso) + backend de reconhecimento facial (FastAPI/PostgreSQL). Idioma do conteúdo e commits: pt-BR.
-- Stack: frontend estático sem build (`index.html`, `assets/`, HTMLs em raiz) + backend Python em `src/` (`main.py`, `api.py`, `reconhecimento.py`, `usuarios.py`, `sessoes.py`, `servicos.py`, `banco_dados.py`, `cadastro.py`, `estado.py`, `camera_compartilhada.py`, `fotos_temporarias.py`). Banco: PostgreSQL via `compose.yaml`; schema em `sql/inicializacao.sql`.
-- Rodar frontend: `python3 -m http.server 8000` na raiz → `http://localhost:8000` (não usar `file://`; usa `localStorage`/`sessionStorage`).
-- Rodar backend: `docker compose up` (PostgreSQL na porta 5432) + `pip install -r requirements.txt` e `uvicorn src.api:app` (ou `python src/main.py`). Arquivo `.env` não commitar — criar localmente.
-- Ordem de scripts frontend (importa): `data.js` → `auth.js` → `app.js` (carregados no rodapé de `index.html`; HTMLs da raiz reutilizam os mesmos).
-- Fonte da verdade frontend: `assets/js/data.js` (`VERDEID_NIVEIS`, `VERDEID_ARTIGOS`, `VERDEID_USUARIOS_DEMO`); `assets/js/auth.js` expõe `Auth`. Contas demo: `cidadao@verdeid.demo`, `pesquisador@verdeid.demo`, `gestor@verdeid.demo`, senha `demo123`.
-- Reconhecimento facial: simulação didática no frontend; backend real em `src/reconhecimento.py` (DeepFace). Não persistir biometria real, não commitar segredos/`.env`.
-- Conteúdo acadêmico: lacunas da proposta usar `[PROVISÓRIO]` ou `[DEMO]`. Não inventar dados nem alterar requisitos silenciosamente.
-- Testes: `tests/` (pytest). Validar manualmente: frontend `index → login → painel → artigo`; backend `docker compose up → uvicorn → testes`.
-- Workflow: mudanças pequenas e navegáveis; `git status` + `git diff` antes de commit; sem push/PR sem pedido explícito.
+- Projeto: VerdeID — landing pública + plataforma autenticada com conteúdo por nível de acesso. Idioma do conteúdo e commits: pt-BR.
+- Stack: site estático sem build (HTML/CSS/JS em `index.html`, `assets/`). Rodar com `python3 -m http.server 8000` na raiz; não abrir via `file://` se testar login/filtros (usa `localStorage`/`sessionStorage`).
+- Ordem de scripts (importa): `data.js` → `auth.js` → `app.js` (carregados no rodapé de `index.html`). `painel.html`, `login.html`, `cadastro.html`, `artigo.html` reutilizam esses mesmos scripts.
+- Fonte da verdade: `assets/js/data.js` define `VERDEID_NIVEIS` (1 Cidadão, 2 Pesquisador, 3 Gestor), `VERDEID_ARTIGOS` (filtro por `artigo.nivel <= sessão.nivel`) e `VERDEID_USUARIOS_DEMO`. `assets/js/auth.js` expõe `Auth` (`entrar/cadastrar/sair`; sessão em `sessionStorage`, persistência opcional em `localStorage`). `assets/js/app.js` cuida da nav/reveal e da verificação facial simulada.
+- Contas demo: `cidadao@verdeid.demo` / `pesquisador@verdeid.demo` / `gestor@verdeid.demo`, senha `demo123`. `cadastro.html` cria conta nível 1.
+- Conteúdo acadêmico: lacunas da proposta usar marcador `[PROVISÓRIO]` ou `[DEMO]`. Não inventar dados nem alterar requisitos silenciosamente.
+- Segurança/LGPD: reconhecimento facial é simulação didática (apenas visual no navegador). Não persistir biometria real, não commitar segredos ou `.env`.
+- Fluxo de validação manual: `index.html` → `login.html` (conta demo) → `painel.html` (acervo filtrado por nível) → `artigo.html?id=...` (nega acesso se nível insuficiente).
+- Workflow: mudanças pequenas e navegáveis; conferir `git status` + `git diff` antes de commit; sem push/PR sem pedido explícito.

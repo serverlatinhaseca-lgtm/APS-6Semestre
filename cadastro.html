@@ -6,18 +6,12 @@
 <nav class="nav"><div class="nav-inner"><a class="brand" href="index.html"><span class="brand-mark">V</span> VerdeID</a><div class="nav-links"><a href="index.html">Início</a><a href="login.html">Entrar</a></div></div></nav>
 <main class="wrap"><section class="block">
 <form class="form" id="f-cad">
-<h1 style="margin:0">Criar conta</h1><p class="muted">Escolha o nível de acesso da nova conta [PROVISÓRIO].</p>
+<h1 style="margin:0">Criar conta</h1><p class="muted">Novas contas começam no nível <strong>Cidadão (1)</strong> [PROVISÓRIO].</p>
 <div class="alert alert-err" id="erro" hidden></div>
 <label for="nome">Nome</label><input id="nome" required autocomplete="name" placeholder="Seu nome">
 <label for="email">E-mail</label><input id="email" type="email" required autocomplete="email">
 <label for="senha">Senha (mín. 6)</label><input id="senha" type="password" required autocomplete="new-password">
-<label for="nivel">Nível de acesso (permissão)</label>
-<select id="nivel" required>
-  <option value="1">1 — Cidadão (guias, coleta seletiva, denúncias)</option>
-  <option value="2">2 — Pesquisador (metodologias, relatórios técnicos)</option>
-  <option value="3">3 — Gestor (fiscalização, áreas sensíveis, incidentes)</option>
-</select>
-<button class="btn btn-primary" style="width:100%;margin-top:14px" type="submit">Criar conta e entrar</button>
+<button class="btn btn-primary" style="width:100%;margin-top:14px" type="submit">Criar e entrar</button>
 <p class="hint">Ao criar, você concorda com o uso didático [DEMO] descrito em <a href="privacidade.html">Privacidade</a>.</p>
 </form>
 </section></main>
@@ -25,7 +19,7 @@
 <script>
 document.getElementById("f-cad").addEventListener("submit",e=>{
   e.preventDefault();
-  const r=Auth.cadastrar(nome.value,email.value,senha.value,nivel.value);
+  const r=Auth.cadastrar(nome.value,email.value,senha.value);
   if(r.erro){ const x=document.getElementById("erro"); x.hidden=false; x.textContent=r.erro; return; }
   location.href="painel.html";
 });
