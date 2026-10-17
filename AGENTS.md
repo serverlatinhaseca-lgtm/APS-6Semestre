@@ -1,14 +1,11 @@
-# AGENTS.md — VerdeID (APS 6º semestre)
+# AGENTS.md — APS-6Semestre / VerdeID
 
-- Stack: site estático de arquivo único — tudo em `index.html` (~90 KB, CSS + 2 `<script>` inline). Sem build, sem dependências, sem backend, sem `assets/`. Externos: Google Fonts + imagens/vídeos hotlinked (pexels/unsplash/wikimedia) — precisa de internet.
-- Rodar: `python3 -m http.server 8000` na raiz → `http://localhost:8000`.
-- Fonte da verdade: `const levels = {'1','2','3'}` no primeiro `<script>` — rótulos, intros, vídeos e `articles[]` por nível (`{category, nivel, img, id, fact, title, summary, detail}`). O segundo `<script>` é só reveal-on-scroll (`watch`); não colocar lógica de negócio nele.
-- Login é fake: `simulateLogin()` lê `#demoName` + `#demoLevel` + checkbox `#privacy`, guarda em `currentName/currentLevel` (default `'2'`) só em memória — sem senha, sem storage, recarregar perde a sessão. `logout()` volta para a landing.
-- Acesso cumulativo em `showPortal()`: nível 1 vê L1; nível 2 vê L1+L2; nível 3 vê tudo + banner estratégico. Busca `#busca` → `filtrarBiblio()` casa contra `data-t`; `toggleArticle` expande inline; `openArticle(id)` abre overlay. Cada artigo tem `video` próprio (testar HTTP 200 ao trocar o `src`).
-- Mapa (só L3) em `initMapa()`: base satélite Esri World Imagery + labels (sem chave) e `PTS` hardcoded `{la,lo,t,d,k,s,r,img}`; L1/L2 veem cartão bloqueado via `mapaSecao()`.
-- Facial/biometria é decorativa (SVG/CSS + texto) — sem `getUserMedia`, nada é capturado/enviado: não persistir biometria nem adicionar reconhecimento real.
-- Slot facial (módulo externo feito à parte): `window.FaceSlot` detecta `window.VerdeIDFace.verificar()` → `Promise<{ok:true,nome,nivel:'1'|'2'|'3'}|{ok:false,motivo?}>`; o módulo monta a câmera em `#faceMount` (`#facePlaceholder` some). Sem o módulo, `simulateLogin()` segue o fluxo demo. Não mudar esse contrato sem avisar a equipe.
-- Edição: linhas muito longas — navegar por âncoras (`id:'...'`, nomes de função) e conferir com grep. Manter arquivo único; não recriar `assets/` nem multipágina sem pedido.
-- Conteúdo e commits em pt-BR. Dados ilustrativos marcados `[SIMULAÇÃO]` — não apresentar como reais nem remover a marca silenciosamente.
-- Sem testes/lint. Validar manualmente: landing → login (nome + nível) → portal (lista cumulativa, busca, vídeo, mapa) → artigo overlay.
-- Workflow: mudanças pequenas; `git status` + `git diff` antes de commit; sem push/PR e sem commitar segredos/`.env`.
+- Projeto: VerdeID — landing pública + plataforma autenticada com conteúdo por nível de acesso. Idioma do conteúdo e commits: pt-BR.
+- Stack: site estático sem build (HTML/CSS/JS em `index.html`, `assets/`). Rodar com `python3 -m http.server 8000` na raiz; não abrir via `file://` se testar login/filtros (usa `localStorage`/`sessionStorage`).
+- Ordem de scripts (importa): `data.js` → `auth.js` → `app.js` (carregados no rodapé de `index.html`). `painel.html`, `login.html`, `cadastro.html`, `artigo.html` reutilizam esses mesmos scripts.
+- Fonte da verdade: `assets/js/data.js` define `VERDEID_NIVEIS` (1 Cidadão, 2 Pesquisador, 3 Gestor), `VERDEID_ARTIGOS` (filtro por `artigo.nivel <= sessão.nivel`) e `VERDEID_USUARIOS_DEMO`. `assets/js/auth.js` expõe `Auth` (`entrar/cadastrar/sair`; sessão em `sessionStorage`, persistência opcional em `localStorage`). `assets/js/app.js` cuida da nav/reveal e da verificação facial simulada.
+- Contas demo: `cidadao@verdeid.demo` / `pesquisador@verdeid.demo` / `gestor@verdeid.demo`, senha `demo123`. `cadastro.html` cria conta nível 1.
+- Conteúdo acadêmico: lacunas da proposta usar marcador `[PROVISÓRIO]` ou `[DEMO]`. Não inventar dados nem alterar requisitos silenciosamente.
+- Segurança/LGPD: reconhecimento facial é simulação didática (apenas visual no navegador). Não persistir biometria real, não commitar segredos ou `.env`.
+- Fluxo de validação manual: `index.html` → `login.html` (conta demo) → `painel.html` (acervo filtrado por nível) → `artigo.html?id=...` (nega acesso se nível insuficiente).
+- Workflow: mudanças pequenas e navegáveis; conferir `git status` + `git diff` antes de commit; sem push/PR sem pedido explícito.
