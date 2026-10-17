@@ -19,14 +19,16 @@
       if(lembrar) localStorage.setItem(KEY+"-persist",JSON.stringify(s));
       return {ok:s};
     },
-    cadastrar(nome,email,senha){
+    cadastrar(nome,email,senha,nivel){
       nome=(nome||"").trim(); email=norm(email);
+      const n=parseInt(nivel,10);
+      if(!n || n<1 || n>3) return {erro:"Nível de acesso inválido."};
       if(nome.length<2) return {erro:"Informe seu nome."};
       if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return {erro:"E-mail inválido."};
       if((senha||"").length<6) return {erro:"Senha com no mínimo 6 caracteres."};
       const todos=[...window.VERDEID_USUARIOS_DEMO, ...leUsers()];
       if(todos.some(x=>norm(x.email)===email)) return {erro:"Este e-mail já está em uso."};
-      const u={nome,email,senha,nivel:1};
+      const u={nome,email,senha,nivel:n};
       const l=leUsers(); l.push(u); salvaUsers(l);
       return Auth.entrar(email,senha,false);
     },
