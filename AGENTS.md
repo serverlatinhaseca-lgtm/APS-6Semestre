@@ -50,7 +50,7 @@ Usada tanto pelo `http.server` (frontend) quanto pelo uvicorn (backend). Não ro
 |---|---|
 | `index.html` | Landing pública |
 | `login.html` | Login (usa `Auth.entrar`) |
-| `cadastro.html` | Cadastro de conta demo (usa `Auth.cadastrar`) |
+| `cadastro.html` | Cadastro de conta demo com escolha de nível (usa `Auth.cadastrar`) |
 | `painel.html` | Acervo por nível (usa `Auth.exigir`, filtra artigos) |
 | `artigo.html` | Leitura de artigo com controle de acesso por nível |
 | `privacidade.html` | Política LGPD / didático |
@@ -115,7 +115,76 @@ No cadastro (`cadastro.html`) é possível escolher o nível de acesso (1, 2 ou 
 - Painel mostra apenas artigos com `nivel ≤ nível do usuário`.
 - Artigo com nível superior exibe "Acesso negado".
 
-## 8. Regras e gotchas (o que um agente provavelmente esqueceria)
+## 8. ANÁLISE DE SEGURANÇA E VAZAMENTOS (leitura obrigatória antes de alterar anything)
+
+Esta seção lista pontos de atenção verificados no código. **Nenhum arquivo de reconhecimento facial foi modificado.**
+
+### 8.1 Dados biométricos (imagens faciais) — PONTOS DE ATENÇÃO
+
+| Onde | O que acontece | Risco |
+|---|---|---|
+| `sql/inicializacao.sql` | Tabela `usuarios` tem coluna `imagem` (BYTEA) que armazena a foto facial do usuário. | Armazena dado biométrico no banco. |
+| `src/usuarios.py` (`cadastrar_usuario`) | Recebe `imagem` em bytes e insere na coluna `imagem` da tabela `usuarios`. | Persiste biometria no banco. |
+| `src/api.py` (`/status`) | Retorna a imagem do usuário em **Base64** no campo `foto` da resposta JSON. | **Expõe a imagem biométrica via API.** Qualquer pessoa com o token pode baixar a foto do rosto. |
+| `src/api.py` (`/usuarios`) | Aceita upload de imagem via formulário e salva no banco. | Entrada de biometria no sistema. |
+| `src/reconhecimento.py` | (outro time — não modificar) Grava imagens em `tempfile.TemporaryDirectory()` para DeepFace. | Arquivos temporários são removidos ao sair do contexto `with`. |
+| `src/fotos_temporarias.py` | Salva fotos em pasta temporária removida via `atexit`. | Removida ao encerrar o processo. |
+
+**Ação recomendada (somente no site/frontend, sem tocar no reconhecimento):** não exibir a imagem facial retornada por `/status` na interface do site, a menos que seja estritamente necessário. O campo `foto` vem em Base64 e é a imagem biométrica do usuário.
+
+### 8.2 CPF (dado pessoal sensível — LGPD)
+
+| Onde | O que acontece | Risco |
+|---|---|---|
+| `sql/inicializacao.sql` | `cpf CHAR(11) PRIMARY KEY` na tabela `usuarios`. | CPF é chave primária — dado sensível exposto no schema. |
+| `src/api.py` (`/usuarios`) | Retorna `cpf` na resposta do cadastro (status 201). | CPF exposto na resposta da API. |
+| `src/api.py` (`/status`) | Retorna `cpf` no campo `cpf` da resposta. | CPF exposto via API autenticada. |
+| `src/usuarios.py` (`buscar_usuario_por_cpf`) | Consulta usuário por CPF. | Endpoint não exposto na API, mas disponível no backend. |
+
+### 8.3 Senhas — VAZAMENTO CONFIRMADO (frontend, pode ser corrigido)
+
+| Onde | O que acontece | Risco |
+|---|---|---|
+| `assets/js/auth.js` | `Auth.cadastrar` armazena `senha` em plain text no `localStorage` (chave `verdeid.users.v1`). | **Senhas em texto claro no navegador.** Qualquer script ou extensão com acesso ao `localStorage` pode ler as senhas. |
+| `assets/js/auth.js` | `VERDEID_USUARIOS_DEMO` contém senhas hardcoded `demo123`. | Senhas demo expostas no código fonte. |
+| `assets/js/auth.js` | `Auth.entrar` armazena a sessão (com `senha`? não, a sessão não armazena senha) — mas `leUsers()` lê usuários com senhas do localStorage. | Usuários cadastrados pelo site têm senhas em plain text persistentes. |
+
+**Ação recomendada (frontend, pode ser alterado):** não armazenar senhas em plain text no `localStorage`. Para a versão demo, considerar armazenar apenas um hash ou não persistir usuários cadastrados entre sessões.
+
+### 8.4 Token de sessão e expiração
+
+| Onde | O que acontece | Risco |
+|---|---|---|
+| `src/sessoes.py` | Tokens gerados com `token_urlsafe(32)`, armazenados em memória (`sessoes_ativas`). | Seguro para demo local. Sessões expiram por inatividade (15 min) ou duração máxima (8 h). |
+| `src/estado.py` | Estado de reconhecimento válido por apenas **3 segundos**. | `/sessao` falha se o reconhecimento estiver expirado. É por design, não é vazamento. |
+| `assets/js/auth.js` | Sessão em `sessionStorage` (temporária) + `localStorage` (persistente se "lembrar" marcado). | `localStorage` persiste após fechar o navegador. |
+
+### 8.5 Variáveis de ambiente e segredos
+
+| Onde | O que acontece | Risco |
+|---|---|---|
+| `.gitignore` | Ignora `.env`, `.venv`, `database/*`, `database/*.pkl`. | ✅ Segredos e cache do DeepFace não são commitados. |
+| `src/banco_dados.py` | `load_dotenv(BASE_DIR / ".env")` e lê `os.environ["POSTGRES_PASSWORD"]`. | Exige `.env` local com `POSTGRES_PASSWORD`. Sem ele, a conexão falha. |
+| `compose.yaml` | `env_file: - .env`, expõe porta `127.0.0.1:5432:5432`. | Banco acessível apenas no localhost. |
+
+### 8.6 Controle de acesso (autorização)
+
+| Onde | O que acontece | Status |
+|---|---|---|
+| `src/servicos.py` (`pode_acessar`) | `nivel_usuario >= nivel_recurso`. | ✅ Correto. |
+| `src/api.py` (`/dados/{nivel}`) | Verifica sessão e chama `consultar_dados`. Retorna 403 se acesso negado. | ✅ Correto. |
+| `assets/js/painel.html` | Filtra artigos: `a.nivel <= s.nivel`. | ✅ Correto no frontend. |
+| `assets/js/artigo.html` | Bloqueia leitura se `a.nivel > s.nivel`. | ✅ Correto no frontend. |
+
+### 8.7 Webcam / câmera
+
+| Onde | O que acontece | Risco |
+|---|---|---|
+| `src/main.py` | `cv2.VideoCapture(0)`. Sem câmera → `SystemExit(1)`. | Requer câmera física. |
+| `assets/js/app.js` | `navigator.mediaDevices.getUserMedia({video:true})` apenas para simulação visual. Nunca grava/envia. | ✅ Sem vazamento de vídeo no frontend. |
+| `src/api.py` (`/cadastro/foto`, `/reconhecimento`) | Lê frame da `camera_compartilhada` (memória) e codifica em JPEG. | Frame fica em memória, não é salvo em disco (exceto fotos temporárias via `fotos_temporarias.py`). |
+
+## 9. Regras e gotchas (o que um agente provavelmente esqueceria)
 
 1. **Site não abre via `file://`** — sempre subir `python3 -m http.server 8000` na raiz. Senão `localStorage`/`sessionStorage` e scripts não funcionam corretamente.
 2. **Ordem dos scripts JS importa:** `data.js` → `auth.js` → `app.js`. Inverter quebra o site.
@@ -128,7 +197,7 @@ No cadastro (`cadastro.html`) é possível escolher o nível de acesso (1, 2 ou 
 9. **Conteúdo acadêmico com lacunas:** marcar com `[PROVISÓRIO]` ou `[DEMO]`. Não inventar dados nem alterar requisitos silenciosamente.
 10. **Biometria nunca é persistida:** reconhecimento no frontend é simulação; no backend, DeepFace compara em diretório temporário que é removido.
 
-## 9. Workflow
+## 10. Workflow
 
 - Mudanças pequenas e navegáveis.
 - `git status` + `git diff` antes de commit.
