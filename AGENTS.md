@@ -106,7 +106,7 @@ Estilização única compartilhada por todos os HTMLs da raiz. ✅ Pode alterar.
 - `pesquisador@verdeid.demo` → nível 2
 - `gestor@verdeid.demo` → nível 3
 
-Contas criadas pelo cadastro começam no nível 1. Todas são mock no `localStorage`/`sessionStorage` — não há backend de usuários nesta versão demo do site.
+No cadastro (`cadastro.html`) é possível escolher o nível de acesso (1, 2 ou 3) do novo usuário via select; o `Auth.cadastrar` aceita o parâmetro `nivel` e valida que seja 1, 2 ou 3. Todas as contas são mock no `localStorage`/`sessionStorage` — não há backend de usuários nesta versão demo do site.
 
 ## 7. Controle de acesso por nível
 
