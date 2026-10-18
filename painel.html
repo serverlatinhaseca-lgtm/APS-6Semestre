@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Painel — VerdeID</title><link rel="stylesheet" href="assets/css/style.css"></head>
+<body>
+  <nav class="nav"><div class="nav-inner"><a class="brand" href="index.html"><span class="brand-mark">V</span> VerdeID</a><div class="nav-links"><a href="index.html">Início</a><span data-auth-area></span></div></div></nav>
+  <main class="wrap"><section class="block">
+    <div class="toolbar"><div><h1 style="margin:0" id="titulo">Acervo</h1><p class="muted" id="sub" style="margin:4px 0"></p></div>
+    <div class="search"><input id="busca" placeholder="Buscar artigos…" aria-label="Buscar artigos" style="max-width:260px"><select id="filtro" aria-label="Filtrar por nível"><option value="0">Todos os meus níveis</option><option value="1">Nível 1</option><option value="2">Nível 2</option><option value="3">Nível 3</option></select></div></div>
+
+    <!-- Verificação facial com webcam real -->
+    <div class="card face" data-face style="margin-bottom:18px">
+      <div style="padding:16px 18px 0"><strong>Verificação facial (simulação didática)</strong>
+        <p class="hint" id="msg-face" style="color:#BFD6C5">Ative a câmera para demonstrar o reconhecimento facial. Nada é gravado ou enviado.</p>
+      </div>
+      <div class="face-view" style="max-width:480px;margin:0 auto;">
+        <video id="video-face" autoplay playsinline muted style="width:100%;max-width:480px;height:auto;display:none;border-radius:12px;border:1px solid var(--line);background:#000"></video>
+        <div id="face-placeholder" style="width:100%;max-width:480px;height:270px;display:flex;align-items:center;justify-content:center;border-radius:12px;border:1px solid var(--line);background:#0B1F16;color:#DFF0E3;font-size:.9rem">
+          Câmera desativada
+        </div>
+        <div class="face-oval" style="margin:10px auto">Posicione o rosto aqui</div>
+      </div>
+      <div style="padding:14px 18px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+        <button class="btn btn-ghost btn-small" id="btn-webcam-face" type="button">Ativar câmera</button>
+        <button class="btn btn-primary btn-small" id="btn-verificar-face" type="button" disabled>Verificar rosto (simulação)</button>
+        <button class="btn btn-ghost btn-small" id="btn-parar-face" type="button" disabled style="color:#A33B3B">Parar câmera</button>
+      </div>
+    </div>
+
+    <div class="grid-3" id="lista"></div>
+    <div class="card" id="vazio" hidden><strong>Nenhum artigo para este filtro.</strong><p class="muted">Sua conta não alcança esse nível — isso é o controle de acesso funcionando.</p></div>
+  </section></main>
+  <footer><div class="wrap">VerdeID · acervo [DEMO] · <span data-ano></span></div></footer>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script>
+    const s=Auth.exigir();
+    if(s){
+      titulo.textContent=`Acervo · ${Auth.nomeNivel(s.nivel)}`;
+      sub.textContent=`${s.nome} — você vê níveis 1 a ${s.nivel}. Níveis [PROVISÓRIO].`;
+      function render(){
+        const q=(busca.value||"").toLowerCase(), f=+filtro.value;
+        const itens=window.VERDEID_ARTIGOS.filter(a=>a.nivel<=s.nivel&&(!f||a.nivel===f)&&(!q||(a.titulo+a.resumo).toLowerCase().includes(q)));
+        lista.innerHTML=itens.map(a=>`<div class="card"><span class="tag">Nível ${a.nivel} · ${Auth.nomeNivel(a.nivel)}</span><h3>${a.titulo}</h3><p class="muted">${a.resumo}</p><a class="btn btn-primary btn-small" href="artigo.html?id=${a.id}">Ler artigo</a></div>`).join("");
+        vazio.hidden=itens.length>0;
+      }
+      busca.addEventListener("input",render); filtro.addEventListener("change",render); render();
+    }
+
+    // Webcam para verificação facial no painel
+    let streamFace = null;
+    const videoFace = document.getElementById("video-face");
+    const placeholderFace = document.getElementById("face-placeholder");
+    const btnWebcamFace = document.getElementById("btn-webcam-face");
+    const btnVerificarFace = document.getElementById("btn-verificar-face");
+    const btnPararFace = document.getElementById("btn-parar-face");
+    const msgFace = document.getElementById("msg-face");
+
+    btnWebcamFace.addEventListener("click", async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: 640, height: 480 } });
+        streamFace = stream;
+        videoFace.srcObject = stream;
+        videoFace.style.display = "block";
+        placeholderFace.style.display = "none";
+        btnWebcamFace.disabled = true;
+        btnWebcamFace.textContent = "Câmera ativa";
+        btnVerificarFace.disabled = false;
+        btnPararFace.disabled = false;
+        msgFace.textContent = "Câmera ativa. Posicione o rosto e clique em “Verificar rosto”.";
+        msgFace.style.color = "#7CC79A";
+      } catch (err) {
+        console.error(err);
+        msgFace.textContent = "Câmera indisponível. Use o modo simulação abaixo.";
+        msgFace.style.color = "#A33B3B";
+        btnVerificarFace.disabled = false;
+      }
+    });
+
+    btnVerificarFace.addEventListener("click", () => {
+      if (!streamFace) {
+        msgFace.textContent = "Analisando traços (simulação didática)…";
+        setTimeout(() => {
+          Auth.marcarRosto();
+          msgFace.textContent = "Verificação concluída [SIMULAÇÃO]. Nenhum dado biométrico foi armazenado.";
+          msgFace.style.color = "#7CC79A";
+          btnVerificarFace.disabled = true;
+        }, 1200);
+        return;
+      }
+
+      msgFace.textContent = "Capturando frame e analisando (simulação)…";
+      const canvas = document.createElement("canvas");
+      canvas.width = videoFace.videoWidth || 640;
+      canvas.height = videoFace.videoHeight || 480;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(videoFace, 0, 0);
+
+      setTimeout(() => {
+        Auth.marcarRosto();
+        msgFace.textContent = "Verificação concluída [SIMULAÇÃO]. Nenhum dado biométrico foi armazenado.";
+        msgFace.style.color = "#7CC79A";
+        btnVerificarFace.disabled = true;
+      }, 1200);
+    });
+
+    btnPararFace.addEventListener("click", () => {
+      if (streamFace) {
+        streamFace.getTracks().forEach(t => t.stop());
+        streamFace = null;
+      }
+      videoFace.style.display = "none";
+      placeholderFace.style.display = "flex";
+      btnWebcamFace.disabled = false;
+      btnWebcamFace.textContent = "Ativar câmera";
+      btnVerificarFace.disabled = true;
+      btnPararFace.disabled = true;
+      msgFace.textContent = "Câmera desativada.";
+      msgFace.style.color = "#BFD6C5";
+    });
+
+    window.addEventListener("beforeunload", () => {
+      if (streamFace) streamFace.getTracks().forEach(t => t.stop());
+    });
+  </script>
+</body>
+</html>
